@@ -1,74 +1,149 @@
-class BSTNode:
+from collections import deque
+
+class TreeNode:
     def __init__(self, value):
-        """
-        Узел двоичного дерева: значение + ссылки на левого и правого потомка.
-        """
         self.value = value
         self.left = None
         self.right = None
 
+class BinarySearchTree:
+    def __init__(self):
+        self.root = None
+    
+    # Вставить значение
     def insert(self, value):
-        """
-        Вставка нового значения в дерево (с сохранением свойств BST).
-        """
-        if value < self.value:
-            # Идем в левое поддерево
-            if self.left is None:
-                self.left = BSTNode(value)
-            else:
-                self.left.insert(value)
+        if self.root is None:
+            self.root = TreeNode(value)
         else:
-            # Идем в правое поддерево (допустим, равные элементы кладем направо)
-            if self.right is None:
-                self.right = BSTNode(value)
+            self._insert_recursive(self.root, value)
+    
+    def _insert_recursive(self, node, value):
+        if value < node.value:
+            if node.left is None:
+                node.left = TreeNode(value)
             else:
-                self.right.insert(value)
-
+                self._insert_recursive(node.left, value)
+        elif value > node.value:
+            if node.right is None:
+                node.right = TreeNode(value)
+            else:
+                self._insert_recursive(node.right, value)
+    
+    # Поиск значения
     def search(self, value):
-        """
-        Поиск значения в дереве.
-        """
-        if value == self.value:
+        return self._search_recursive(self.root, value)
+    
+    def _search_recursive(self, node, value):
+        if node is None:
+            return False
+        
+        if value == node.value:
             return True
-        elif value < self.value:
-            # Ищем в левом поддереве
-            if self.left is None:
-                return False
-            else:
-                return self.left.search(value)
+        elif value < node.value:
+            return self._search_recursive(node.left, value)
         else:
-            # Ищем в правом поддереве
-            if self.right is None:
-                return False
-            else:
-                return self.right.search(value)
+            return self._search_recursive(node.right, value)
+    
+    # Средний обход (Inorder)
+    def inorder_traversal(self, node=None, result=None):
+        if result is None:
+            result = []
+        if node is None:
+            node = self.root
+        
+        if node:
+            self.inorder_traversal(node.left, result)
+            result.append(node.value)
+            self.inorder_traversal(node.right, result)
+        
+        return result
+    
+    # Прямой обход (Preorder)
+    def preorder_traversal(self, node=None, result=None):
+        if result is None:
+            result = []
+        if node is None:
+            node = self.root
+        
+        if node:
+            result.append(node.value)
+            self.preorder_traversal(node.left, result)
+            self.preorder_traversal(node.right, result)
+        
+        return result
+    
+    # Обратный обход (Postorder)
+    def postorder_traversal(self, node=None, result=None):
+        if result is None:
+            result = []
+        if node is None:
+            node = self.root
+        
+        if node:
+            self.postorder_traversal(node.left, result)
+            self.postorder_traversal(node.right, result)
+            result.append(node.value)
+        
+        return result
+    
+    # Обход в ширину (Level-order)
+    def level_order_traversal(self):
+        if not self.root:
+            return []
+        
+        result = []
+        queue = deque([self.root])
+        
+        while queue:
+            node = queue.popleft()
+            result.append(node.value)
+            
+            if node.left:
+                queue.append(node.left)
+            if node.right:
+                queue.append(node.right)
+        
+        return result
+    
+    # Найти минимальное значение
+    def find_min(self, node=None):
+        if node is None:
+            node = self.root
+        
+        while node.left:
+            node = node.left
+        
+        return node.value
+    
+    # Найти максимальное значение
+    def find_max(self, node=None):
+        if node is None:
+            node = self.root
+        
+        while node.right:
+            node = node.right
+        
+        return node.value
 
-    def inorder_traversal(self):
-        """
-        Симметричный обход (in-order traversal): 
-        сначала левое поддерево, потом узел, потом правое поддерево.
-        """
-        elements = []
-        # Обходим левое поддерево
-        if self.left:
-            elements += self.left.inorder_traversal()
-        # Добавляем текущее значение
-        elements.append(self.value)
-        # Обходим правое поддерево
-        if self.right:
-            elements += self.right.inorder_traversal()
-        return elements
-
-
-# Пример использования BST:
-root = BSTNode(10)
-root.insert(5)
-root.insert(15)
-root.insert(2)
-root.insert(5)   # вставится справа от узла со значением 5
-root.insert(12)
-root.insert(20)
-
-print(root.inorder_traversal())  # Вывод: [2, 5, 5, 10, 12, 15, 20]
-print(root.search(15))  # Вывод: True
-print(root.search(8))   # Вывод: False
+# Пример использования
+if __name__ == "__main__":
+    bst = BinarySearchTree()
+    
+    bst.insert(50)
+    bst.insert(30)
+    bst.insert(70)
+    bst.insert(20)
+    bst.insert(40)
+    bst.insert(60)
+    bst.insert(80)
+    
+    print('Средний обход (Inorder):', bst.inorder_traversal())
+    print('Прямой обход (Preorder):', bst.preorder_traversal())
+    print('Обратный обход (Postorder):', bst.postorder_traversal())
+    print('Обход в ширину (Level-order):', bst.level_order_traversal())
+    
+    print('Поиск 40:', bst.search(40))  # True
+    print('Поиск 100:', bst.search(100))  # False
+    
+    print('Минимум:', bst.find_min())  # 20
+    print('Максимум:', bst.find_max())  # 80
